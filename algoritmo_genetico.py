@@ -13,13 +13,27 @@ class Individuo():
         self.limite_espacos = limite_espacos
         self.nota_avaliacao = 0
         self.geracao = geracao
+        self.espaco_usado = 0
         self.cromossomo = [] # ainda sem solucao
         
         for i in range(len(espacos)): # quantidade de espacos no vetor
             if random() < 0.5: # 50% de probabilidade de ser 0 ou 1; numero aleatorio
-                self.cromossomo.append("0") 
+                self.cromossomo.append("0") # nao vou levar no caminhao
             else:
-                self.cromossomo.append("1")
+                self.cromossomo.append("1") # vou levar
+                
+    def avaliacao(self): # nova funcao na classe; avalia individuos mais apropriados
+        nota = 0
+        soma_espacos = 0
+        for i in range(len(self.cromossomo)):
+            if self.cromossomo[i]=="1":
+                nota +=self.valores[i]
+                soma_espacos +=self.espacos[i]
+            if soma_espacos > self.limite_espacos: # se o tamanho dos produtos levadores forem maiores do que o limite, superou o valor da carga, entao nao eh solucao boa
+                nota = 1
+            self.nota_avaliacao = nota
+            self.espaco_usado = soma_espacos
+                
         
 if __name__ == '__main__': 
     lista_produtos = [] # inicia lista
