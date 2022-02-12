@@ -84,6 +84,15 @@ class AlgoritmoGenetico(): # vai armazenar objetos do tipo Individuo
         self.populacao = sorted(self.populacao, key = lambda populacao: populacao.nota_avaliacao,
                                 reverse= True)
         
+    def melhor_individuo(self, individuo): # checa se a nota do individuo recebido é melhor que a nota da melhor solução
+        if individuo.nota_avaliacao > self.melhor_solucao.nota_avaliacao: # melhor_solucao carrega o objeto do individuo
+            self.melhor_solucao = individuo # se for, o individuo da melhor solucao muda
+       
+    def soma_avaliacoes(self): # somatorio de todas avaliações dos individuos (que cromossomo==1)
+        soma=0
+        for individuo in self.populacao:
+            soma += individuo.nota_avaliacao # nota_avaliacao tem todas as somas dos valores
+      
 if __name__ == '__main__': 
     lista_produtos = [] # inicia lista
     lista_produtos.append(Produto("Geladeira Dako", 0.751, 999.90)) # adiciona na lista
@@ -118,10 +127,15 @@ if __name__ == '__main__':
     for individuo in ag.populacao: # pega cada individuo da populacao e o submete a avaliacao
         individuo.avaliacao()
         
-    ag.ordena_populacao()
-    for i in range(ag.tamanho_populacao) :
-        print("*** INDIVIDUO %s ***\n" % i,
-              "Espaços = %s\n" % str(ag.populacao[i].espacos),
-              "Valores = %s\n" % str(ag.populacao[i].valores),
-              "Cromossomo = %s\n" % str(ag.populacao[i].cromossomo),
-              "Nota = %s\n" % ag.populacao[i].nota_avaliacao)
+    ag.ordena_populacao() # ordena pela nota de avaliação
+    ag.melhor_individuo(ag.populacao[0]) # depois que ordena, o melhor individuo é o primeiro
+    
+    # for i in range(ag.tamanho_populacao) :
+    #     print("*** INDIVIDUO %s ***\n" % i,
+    #           "Espaços = %s\n" % str(ag.populacao[i].espacos),
+    #           "Valores = %s\n" % str(ag.populacao[i].valores),
+    #           "Cromossomo = %s\n" % str(ag.populacao[i].cromossomo),
+    #           "Nota = %s\n" % ag.populacao[i].nota_avaliacao)
+    
+    soma = ag.soma_avaliacoes()
+    
