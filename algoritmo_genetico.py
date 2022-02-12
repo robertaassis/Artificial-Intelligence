@@ -52,8 +52,9 @@ class Individuo():
         
         return filhos
     
+    # há uma possibilidade, mesmo que pequena, de mutar os genes
     def mutacao(self, taxa_mutacao):
-        print("Antes %s " % self.cromossomo)
+        # print("Antes %s " % self.cromossomo)
         for i in range(len(self.cromossomo)):
             # se random foi maior que taxa_mutacao entao ocorre a mutacao (troca os genes)
             if random() < taxa_mutacao:
@@ -61,7 +62,7 @@ class Individuo():
                     self.cromossomo[i]='0'
                 else:
                     self.cromossomo[i]='1'
-        print("Depois %s " % self.cromossomo)            
+        # print("Depois %s " % self.cromossomo)            
         return self
     
     
@@ -92,7 +93,8 @@ class AlgoritmoGenetico(): # vai armazenar objetos do tipo Individuo
         soma=0
         for individuo in self.populacao:
             soma += individuo.nota_avaliacao # nota_avaliacao tem todas as somas dos valores
-      
+        
+        return soma
     # INDIVIDUOS MAIS APTOS = AVALIAÇÃO MAIOR. Quem tem maior avaliação, tem mais chance de ser selecionado
     
     # roleta viciada, retorna id do individuo selecionado
@@ -119,7 +121,7 @@ if __name__ == '__main__':
     lista_produtos.append(Produto("TV 55", 0.400, 4346.99))
     lista_produtos.append(Produto("TV 50", 0.290, 3999.90))
     lista_produtos.append(Produto("TV 42", 0.200, 2999.00))
-    lista_produtos.append(Produto("Notebook Dell", 0.00350, 2499.90))
+    '''lista_produtos.append(Produto("Notebook Dell", 0.00350, 2499.90))
     lista_produtos.append(Produto("Ventilador Panasonic", 0.496, 199.90))
     lista_produtos.append(Produto("Microondas Electrolux", 0.0424, 308.66))
     lista_produtos.append(Produto("Microondas LG", 0.0544, 429.90))
@@ -127,7 +129,7 @@ if __name__ == '__main__':
     lista_produtos.append(Produto("Geladeira Brastemp", 0.635, 849.00))
     lista_produtos.append(Produto("Geladeira Consul", 0.870, 1199.89))
     lista_produtos.append(Produto("Notebook Lenovo", 0.498, 1999.90))
-    lista_produtos.append(Produto("Notebook Asus", 0.527, 3999.00))
+    lista_produtos.append(Produto("Notebook Asus", 0.527, 3999.00))'''
    
     
     espacos = [] # guarda todos os espaços dos produtos
@@ -139,7 +141,7 @@ if __name__ == '__main__':
         nomes.append(produto.nome)
     limite = 3 # limite de 3 metros cubicos que o caminhão pode carregar
     
-    tamanho_populacao = 20
+    tamanho_populacao = 4 # só terá 4 individuos em cada uma das populações 
     ag = AlgoritmoGenetico(tamanho_populacao)
     ag.inicializa_populacao(espacos, valores, limite)
     
@@ -161,8 +163,28 @@ if __name__ == '__main__':
     #           "Nota = %s\n" % ag.populacao[i].nota_avaliacao)
     
     soma = ag.soma_avaliacoes()
-    # escolhe 2 pais aleatorios dos 14 
-    for individuos_gerados in range(0, ag.tamanho_populacao, 2): # vai de zero até o tamanho_populacao de 2 em 2
-        pai1 = ag.seleciona_pai(soma)
-        pai2 = ag.seleciona_pai(soma)
     
+    nova_populacao = []
+    probabilidade_mutacao = 0.01 # probabilidade é sempre baixa
+    # escolhe 2 pais aleatorios dos 14;
+    # cada vez que faz o crossover gera 2 filhos
+    for individuos_gerados in range(0, ag.tamanho_populacao, 2): # vai de zero até o tamanho_populacao de 2 em 2
+        pai1 = ag.seleciona_pai(soma) # pega indice do pai escolhido
+        pai2 = ag.seleciona_pai(soma)
+        
+        filhos = ag.populacao[pai1].crossover(ag.populacao[pai2])
+        nova_populacao.append(filhos[0].mutacao(probabilidade_mutacao)) # colocando filhos na nova populacao e já aplicando tb a mutação
+        nova_populacao.append(filhos[1].mutacao(probabilidade_mutacao))
+    
+    ag.populacao = list(nova_populacao) # define populacao sobrevivente e atualiza a populacao com a nova
+    # o ag.melhor_individuo guarda o individuo da geração anterior que tem a melhor nota
+    for individuo in ag.populacao:
+        individuo.avaliacao()
+        
+    ag.ordena_populacao() # individuos com maiores notas vem primeiro
+    
+    # codigo abaixo checa se o melhor individuo dessa geração, tem nota melhor que o da geração antiga
+    # se tiver, o atual recebe o melhor_individuo, se não, permanece o da geração antiga
+    ag.melhor_individuo(ag.populacao[0]) # individuo 0 tem a maior nota pois estava ordenado
+    soma = ag.soma_avaliacoes()
+    print("Melhor: %s\n" % ag.melhor_solucao.cromossomo, " Valor: %s\n" % ag.melhor_solucao.nota_avaliacao)
