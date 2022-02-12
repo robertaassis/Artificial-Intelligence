@@ -30,7 +30,7 @@ class Individuo():
                 nota +=self.valores[i]
                 soma_espacos +=self.espacos[i]
             if soma_espacos > self.limite_espacos: # se o tamanho dos produtos levados forem maiores do que o limite, superou o valor da carga, entao nao eh solucao boa
-                nota = 1 # nota ruim, pq extrapolou limite
+                nota = 1 # nota ruim, pq extrapolou limite, porém não ignora esse individuo
             self.nota_avaliacao = nota
             self.espaco_usado = soma_espacos
     
@@ -93,6 +93,25 @@ class AlgoritmoGenetico(): # vai armazenar objetos do tipo Individuo
         for individuo in self.populacao:
             soma += individuo.nota_avaliacao # nota_avaliacao tem todas as somas dos valores
       
+    # INDIVIDUOS MAIS APTOS = AVALIAÇÃO MAIOR. Quem tem maior avaliação, tem mais chance de ser selecionado
+    
+    # roleta viciada, retorna id do individuo selecionado
+    def seleciona_pai(self, soma_avaliacao): # sorteia o pai baseado no valor_sorteado (roleta)
+        pai = -1 # nao selecionou nenhum individuo
+        valor_sorteado = random() * soma_avaliacao
+        soma=0
+        i =0
+        while i<len(self.populacao) and soma < valor_sorteado:
+            soma += self.populacao[i].nota_avaliacao
+            pai+=1
+            i += 1
+        # ex: se a soma_avaliacao for 50000 e for multiplicado por 0.4, será 20000.
+        # depois ele pegará a nota_avaliacao de cada individuo nessa populacao e somar
+        # quando o valor de soma for maior que o valor sorteado, será escolhido o pai (para o crossover)
+        return pai # retorna indice do pai selecionado
+    
+    
+        
 if __name__ == '__main__': 
     lista_produtos = [] # inicia lista
     lista_produtos.append(Produto("Geladeira Dako", 0.751, 999.90)) # adiciona na lista
@@ -124,6 +143,10 @@ if __name__ == '__main__':
     ag = AlgoritmoGenetico(tamanho_populacao)
     ag.inicializa_populacao(espacos, valores, limite)
     
+    # AO INICIALIZAR A POPULACAO, POR MAIS QUE VALORES E ESPAÇOS SEJAM IGUAIS, OS CROMOSSOMOS
+    # SÃO RANDOMICOS, LOGO, A AVALIAÇÃO DELES MUDAM, POIS SÓ É AVALIADO QUEM TEM CROMOSSOMO IGUAL A 1
+    
+    
     for individuo in ag.populacao: # pega cada individuo da populacao e o submete a avaliacao
         individuo.avaliacao()
         
@@ -138,4 +161,8 @@ if __name__ == '__main__':
     #           "Nota = %s\n" % ag.populacao[i].nota_avaliacao)
     
     soma = ag.soma_avaliacoes()
+    # escolhe 2 pais aleatorios dos 14 
+    for individuos_gerados in range(0, ag.tamanho_populacao, 2): # vai de zero até o tamanho_populacao de 2 em 2
+        pai1 = ag.seleciona_pai(soma)
+        pai2 = ag.seleciona_pai(soma)
     
