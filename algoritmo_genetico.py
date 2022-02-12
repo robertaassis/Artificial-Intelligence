@@ -26,11 +26,11 @@ class Individuo():
         nota = 0
         soma_espacos = 0
         for i in range(len(self.cromossomo)):
-            if self.cromossomo[i]=="1":
+            if self.cromossomo[i]=="1": # avalia todos os individuos que estao no caminhao
                 nota +=self.valores[i]
                 soma_espacos +=self.espacos[i]
             if soma_espacos > self.limite_espacos: # se o tamanho dos produtos levados forem maiores do que o limite, superou o valor da carga, entao nao eh solucao boa
-                nota = 1
+                nota = 1 # nota ruim, pq extrapolou limite
             self.nota_avaliacao = nota
             self.espaco_usado = soma_espacos
     
@@ -63,6 +63,26 @@ class Individuo():
                     self.cromossomo[i]='1'
         print("Depois %s " % self.cromossomo)            
         return self
+    
+    
+class AlgoritmoGenetico(): # vai armazenar objetos do tipo Individuo
+    def __init__(self,tamanho_populacao): # quantos individuos vou criar
+        self.tamanho_populacao = tamanho_populacao
+        self.populacao = [] # vetor de individuos
+        self.geracao = 0
+        self.melhor_solucao = 0 # qual dos individuos terá a melhor solucao (maior nota) e que nao extrapole o limite
+        
+    def inicializa_populacao(self, espacos, valores, limite_espacos):
+        for i in range(self.tamanho_populacao):
+            self.populacao.append(Individuo(espacos, valores, limite_espacos))
+        
+        self.melhor_solucao=self.populacao[0] # de primeiro palpite, seta o primeiro individuo como melhor solucao
+        
+      
+    def ordena_populacao(self):
+        # ordena baseado na nota_avaliacao
+        self.populacao = sorted(self.populacao, key = lambda populacao: populacao.nota_avaliacao,
+                                reverse= True)
         
 if __name__ == '__main__': 
     lista_produtos = [] # inicia lista
@@ -80,38 +100,28 @@ if __name__ == '__main__':
     lista_produtos.append(Produto("Geladeira Consul", 0.870, 1199.89))
     lista_produtos.append(Produto("Notebook Lenovo", 0.498, 1999.90))
     lista_produtos.append(Produto("Notebook Asus", 0.527, 3999.00))
-    #for produto in lista_produtos:
-        #print(produto.nome)
+   
     
-    espacos = []
-    valores = []
-    nomes = []
+    espacos = [] # guarda todos os espaços dos produtos
+    valores = [] # guarda todos os valores dos produtos
+    nomes = [] # guarda todos os nomes dos produtos
     for produto in lista_produtos:
         espacos.append(produto.espaco)
         valores.append(produto.valor)
         nomes.append(produto.nome)
     limite = 3 # limite de 3 metros cubicos que o caminhão pode carregar
     
-    individuo1 = Individuo(espacos, valores, limite) # cria objeto
+    tamanho_populacao = 20
+    ag = AlgoritmoGenetico(tamanho_populacao)
+    ag.inicializa_populacao(espacos, valores, limite)
     
-    for i in range(len(lista_produtos)):
-        if individuo1.cromossomo[i] == "1": # tá na carga
-            print("Nome : %s R$ %s " % (lista_produtos[i].nome, lista_produtos[i].valor))
-    
-    individuo1.avaliacao()
-    print(" Nota = %s" % individuo1.nota_avaliacao)
-    print(" Espaço usado = %s" % individuo1.espaco_usado)
-    
-    # CRIA 2 INDIVIDUOS PARA FAZER O CROSSOVER
-    
-    individuo2 = Individuo(espacos, valores, limite) # cria objeto
-    
-    for i in range(len(lista_produtos)):
-        if individuo2.cromossomo[i] == "1": # tá na carga
-            print("Nome : %s R$ %s " % (lista_produtos[i].nome, lista_produtos[i].valor))
-    
-    individuo2.avaliacao()
-    print(" Nota = %s" % individuo2.nota_avaliacao)
-    print(" Espaço usado = %s" % individuo2.espaco_usado)
-    
-    individuo1.crossover(individuo2) # faz crossover dos dois individuos
+    for individuo in ag.populacao: # pega cada individuo da populacao e o submete a avaliacao
+        individuo.avaliacao()
+        
+    ag.ordena_populacao()
+    for i in range(ag.tamanho_populacao) :
+        print("*** INDIVIDUO %s ***\n" % i,
+              "Espaços = %s\n" % str(ag.populacao[i].espacos),
+              "Valores = %s\n" % str(ag.populacao[i].valores),
+              "Cromossomo = %s\n" % str(ag.populacao[i].cromossomo),
+              "Nota = %s\n" % ag.populacao[i].nota_avaliacao)
